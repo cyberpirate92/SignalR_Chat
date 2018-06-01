@@ -1,5 +1,36 @@
 <html>
-    <body>
-        Hello, World!
-    </body>
+<head>
+    <title> SignalR Chat</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr/dist/browser/signalr.min.js"></script>
+</head>
+<body>
+    <input type="text" id="chatMessage">
+    <button id="sendBtn">Send!</button>
+    <div>
+        <h2>Messages</h2>
+        <ul id="messageList" style="list-style: none">
+            <!-- messages go here -->
+        </div>
+    </div>
+</body>
+<script>
+    var username = "anonymous";
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chat").configureLogging(signalR.LogLevel.Debug).build();
+    connection.on("ReceiveChatMessage", (user, message) => $("#messageList").append(`<li><i>${user}</i>: ${message}</li>`));
+    connection.start();
+
+    $("#sendBtn").click(async () => {
+        const chatMesage = $("#chatMessage").val();
+        console.log(chatMesage);
+        await connection.invoke("SendChatMessage", username, chatMesage);
+        $("#chatMessage").val("");
+    });
+
+    $(window).on('load', () => {
+        username = window.prompt("Enter username", "anonymous");
+        if(!username) username = "anonymous";
+    });
+</script>
 </html>
